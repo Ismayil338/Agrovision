@@ -201,12 +201,18 @@
       }
     });
 
-    // Close language menu when clicking outside
+    // Close language and account menus when clicking outside
     document.addEventListener('click', (e) => {
       const langSwitcher = document.getElementById('lang-switcher');
       const langMenu = document.getElementById('lang-menu');
       if (langSwitcher && langMenu && !langSwitcher.contains(e.target) && !langMenu.contains(e.target)) {
         langMenu.classList.add('hidden');
+      }
+
+      const accountBtn = document.getElementById('sign-in-btn');
+      const accountMenu = document.getElementById('account-menu');
+      if (accountBtn && accountMenu && !accountBtn.contains(e.target) && !accountMenu.contains(e.target)) {
+        accountMenu.classList.add('hidden');
       }
     });
 
@@ -372,20 +378,50 @@
       updateUIForLoggedOut();
       return false;
     }
-
-    function updateUIForLoggedIn(email) {
-      const signInBtn = document.querySelector('button[onclick*="login"]');
-      if (signInBtn) {
-        signInBtn.textContent = email || 'Dashboard';
-        signInBtn.onclick = () => navigateTo('dashboard', { preventDefault: () => {} });
+  
+    function toggleAccountMenu() {
+      const menu = document.getElementById('account-menu');
+      if (menu) {
+        menu.classList.toggle('hidden');
       }
     }
-
+  
+    function updateUIForLoggedIn(email) {
+      const signInBtn = document.getElementById('sign-in-btn');
+      const accountMenu = document.getElementById('account-menu');
+      if (signInBtn) {
+        signInBtn.textContent = email || 'Dashboard';
+        signInBtn.onclick = (event) => {
+          event.preventDefault && event.preventDefault();
+          toggleAccountMenu();
+        };
+      }
+      if (accountMenu) {
+        // Ensure dropdown exists for logged-in users (visibility still controlled via .hidden)
+        accountMenu.classList.remove('hidden');
+        accountMenu.classList.add('hidden');
+      }
+    }
+  
     function updateUIForLoggedOut() {
-      const signInBtn = document.querySelector('button[onclick*="login"]');
+      const signInBtn = document.getElementById('sign-in-btn');
+      const accountMenu = document.getElementById('account-menu');
       if (signInBtn) {
         signInBtn.textContent = 'Sign In';
-        signInBtn.onclick = () => navigateTo('login', { preventDefault: () => {} });
+        signInBtn.onclick = (event) => navigateTo('login', event);
+      }
+      if (accountMenu) {
+        accountMenu.classList.add('hidden');
+      }
+    }
+  
+    async function handleLogout() {
+      const result = await apiCall('/api/logout', { method: 'POST' });
+      if (result.success) {
+        updateUIForLoggedOut();
+        navigateTo('home', { preventDefault: () => {} });
+      } else {
+        alert(result.data?.message || 'Error logging out.');
       }
     }
 
