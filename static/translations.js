@@ -12,7 +12,7 @@ const translations = {
     home: {
       heroTitle: 'Future of Farming',
       heroDescription: 'Revolutionize your agricultural practices with cutting-edge AI technology. Monitor, analyze, and optimize your crops like never before.',
-      startTrial: 'Start Free Trial',
+      startTrial: 'Start Now',
       learnMore: 'Learn More',
       activeFarms: 'Active Farms',
       accuracy: 'Accuracy',
@@ -169,7 +169,7 @@ const translations = {
     home: {
       heroTitle: 'Kənd Təsərrüfatının Gələcəyi',
       heroDescription: 'Ən son AI texnologiyası ilə kənd təsərrüfatı praktikalarınızı inqilab edin. Məhsullarınızı əvvəl heç vaxt olmadığı kimi izləyin, təhlil edin və optimallaşdırın.',
-      startTrial: 'Pulsuz Sınaq Başlat',
+      startTrial: 'Şəkili Yüklə!',
       learnMore: 'Ətraflı Öyrən',
       activeFarms: 'Aktiv Fermalar',
       accuracy: 'Dəqiqlik',
@@ -315,4 +315,5 @@ const translations = {
     }
   }
 };
+
 
