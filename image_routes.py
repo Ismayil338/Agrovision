@@ -116,6 +116,17 @@ def allowed_file(filename: str) -> bool:
 
 @image_bp.route('/<lang>/upload', methods=['GET', 'POST'])
 def upload_image(lang):
+    if model is not None and CLASS_NAMES:
+        try:
+            out_dim = model.output_shape[-1]   # BURADA out_dim yaranır
+            num_labels = len(CLASS_NAMES)
+            print(f"[Agrovision] Model output dim = {out_dim}, class_names = {num_labels}")
+
+            if out_dim != num_labels:
+                print("[Agrovision] WARNING: Model outputs and class_names size mismatch!")
+        except Exception as e:
+            print("[Agrovision] Could not read model output shape:", e)
+
     if lang not in ['az', 'en']:
         abort(404)
 
@@ -176,19 +187,18 @@ def upload_image(lang):
 
                     if prediction is None or len(prediction.shape) != 2 or prediction.shape[0] < 1:
                         predicted_label = "Prediction failed"
-                    elif prediction.shape[1] == 1:
-                        # Binary case
-                        score = float(prediction[0][0])
-                        if len(CLASS_NAMES) >= 2:
-                            predicted_label = CLASS_NAMES[1] if score > 0.5 else CLASS_NAMES[0]
-                        else:
-                            predicted_label = "Unknown"
                     else:
-                        idx = int(np.argmax(prediction[0]))
-                        if 0 <= idx < len(CLASS_NAMES):
-                            predicted_label = CLASS_NAMES[idx]
+                        # Burda multi-class softmax EXPECT edirik
+                        probs = prediction[0]
+                        if probs.ndim != 1:
+                            predicted_label = "Prediction shape error"
                         else:
-                            predicted_label = "Unknown"
+                            predicted_idx = int(np.argmax(probs))
+                            confidence = float(probs[predicted_idx])
+                            if 0 <= predicted_idx < len(CLASS_NAMES):
+                                predicted_label = CLASS_NAMES[predicted_idx]
+                            else:
+                                predicted_label = "Unknown"
             except Exception as e:
                 flash(f"Error during prediction: {str(e)}", "danger")
                 return redirect(request.url)
