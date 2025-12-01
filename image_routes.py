@@ -21,6 +21,8 @@ UPLOAD_FOLDER = os.path.join('static', 'uploads')
 ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
 MODEL_LOCATIONS = ['model', 'models']
 MODEL_CANDIDATES = ['agrovision_final.keras', 'agrovision_best.keras', 'agrovision.h5']
+UNKNOWN_LABEL = "Unknown"
+UNKNOWN_CONFIDENCE_THRESHOLD = 0.5
 CLASS_NAMES_FALLBACK = [
     "Corn_Blight",
     "Corn_Common_Rust",
@@ -124,7 +126,8 @@ def run_prediction(image_path):
         label_options = CLASS_NAMES if len(CLASS_NAMES) == num_outputs else [f"Class_{i}" for i in range(num_outputs)]
         predicted_label = label_options[predicted_idx]
 
-    return predicted_label, confidence
+    final_label = predicted_label if confidence >= UNKNOWN_CONFIDENCE_THRESHOLD else UNKNOWN_LABEL
+    return final_label, confidence
 
 def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
