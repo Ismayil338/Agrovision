@@ -19,9 +19,8 @@ except Exception:
 image_bp = Blueprint('image', __name__)
 UPLOAD_FOLDER = os.path.join('static', 'uploads')
 ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
-MODEL_DIR = 'model'
+MODEL_LOCATIONS = ['model', 'models']
 MODEL_CANDIDATES = ['agrovision_final.keras', 'agrovision_best.keras', 'agrovision.h5']
-CLASS_NAMES_PATH = os.path.join(MODEL_DIR, 'class_names.json')
 CLASS_NAMES_FALLBACK = [
     "Corn_Blight",
     "Corn_Common_Rust",
@@ -53,34 +52,43 @@ def _load_model():
         print("TensorFlow not available. Image prediction will be disabled.")
         return None, None
 
-    for candidate in MODEL_CANDIDATES:
-        candidate_path = os.path.join(MODEL_DIR, candidate)
-        if os.path.exists(candidate_path):
-            try:
-                loaded_model = tf.keras.models.load_model(candidate_path)
-                print(f"Model loaded successfully from {candidate_path}")
-                return loaded_model, candidate_path
-            except Exception as exc:
-                print(f"Error loading model at {candidate_path}: {exc}. Trying next candidate.")
+    for directory in MODEL_LOCATIONS:
+        for candidate in MODEL_CANDIDATES:
+            candidate_path = os.path.join(directory, candidate)
+            if os.path.exists(candidate_path):
+                try:
+                    loaded_model = tf.keras.models.load_model(candidate_path)
+                    print(f"Model loaded successfully from {candidate_path}")
+                    return loaded_model, candidate_path
+                except Exception as exc:
+                    print(f"Error loading model at {candidate_path}: {exc}. Trying next candidate.")
     print("Warning: No trained model file found. Image prediction will be disabled.")
     return None, None
 
 
-def _load_class_names():
-    if os.path.exists(CLASS_NAMES_PATH):
-        try:
-            with open(CLASS_NAMES_PATH, 'r', encoding='utf-8') as fh:
-                names = json.load(fh)
-            if isinstance(names, list) and names:
-                return names
-            print("class_names.json is empty or malformed. Falling back to baked-in labels.")
-        except Exception as exc:
-            print(f"Failed to load class names from JSON: {exc}. Falling back to defaults.")
+def _load_class_names(model_path):
+    candidate_paths = []
+    if model_path:
+        candidate_paths.append(os.path.join(os.path.dirname(model_path), 'class_names.json'))
+    for directory in MODEL_LOCATIONS:
+        candidate_paths.append(os.path.join(directory, 'class_names.json'))
+
+    for path in candidate_paths:
+        if os.path.exists(path):
+            try:
+                with open(path, 'r', encoding='utf-8') as fh:
+                    names = json.load(fh)
+                if isinstance(names, list) and names:
+                    print(f"Loaded {len(names)} class names from {path}")
+                    return names
+                print(f"{path} is empty or malformed. Trying next candidate.")
+            except Exception as exc:
+                print(f"Failed to load class names from {path}: {exc}. Trying next candidate.")
     return CLASS_NAMES_FALLBACK
 
 
 model, MODEL_PATH = _load_model()
-CLASS_NAMES = _load_class_names()
+CLASS_NAMES = _load_class_names(MODEL_PATH)
 
 
 def run_prediction(image_path):
@@ -91,7 +99,7 @@ def run_prediction(image_path):
 
     img = PILImage.open(image_path).convert('RGB')
     img = img.resize((224, 224))
-    img_array = np.array(img, dtype=np.float32) / 255.0
+    img_array = np.array(img, dtype=np.float32)
     img_array = np.expand_dims(img_array, axis=0)
 
     prediction = model.predict(img_array, verbose=0)
