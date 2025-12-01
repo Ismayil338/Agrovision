@@ -1,5 +1,6 @@
 import os
 import uuid
+import json
 from PIL import Image as PILImage
 from flask import Blueprint, request, render_template, redirect, url_for, session, abort, flash, jsonify
 from werkzeug.utils import secure_filename
@@ -19,37 +20,35 @@ image_bp = Blueprint('image', __name__)
 UPLOAD_FOLDER = os.path.join('static', 'uploads')
 ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
 
-# Load the trained model (.h5)
-MODEL_PATH = os.path.join('model', 'agrovision.h5')
+MODEL_DIR = 'model'
+MODEL_CANDIDATES = ['agrovision_final.keras', 'agrovision_best.keras', 'agrovision.h5']
+MODEL_PATH = None
+for name in MODEL_CANDIDATES:
+    candidate = os.path.join(MODEL_DIR, name)
+    if os.path.exists(candidate):
+        MODEL_PATH = candidate
+        break
+
 model = None
-if tf is not None:
+if tf is not None and MODEL_PATH is not None:
     try:
-        if os.path.exists(MODEL_PATH):
-            model = tf.keras.models.load_model(MODEL_PATH)
-            print(f"Model loaded successfully from {MODEL_PATH}")
-        else:
-            print(f"Warning: Model file not found at {MODEL_PATH}. Image prediction will be disabled.")
+        model = tf.keras.models.load_model(MODEL_PATH)
+        print(f"Model loaded successfully from {MODEL_PATH}")
     except Exception as e:
         print(f"Error loading model: {str(e)}. Image prediction will be disabled.")
-else:
+elif tf is None:
     print("TensorFlow not available. Image prediction will be disabled.")
+else:
+    print("Model file not found. Image prediction will be disabled.")
 
-# Optional: class labels if your model uses them
-CLASS_NAMES = [
-    'Apple___Apple_scab', 'Apple___Black_rot', 'Apple___Cedar_apple_rust', 'Apple___healthy',
-    'Blueberry___healthy', 'Cherry_(including_sour)___Powdery_mildew', 'Cherry_(including_sour)___healthy',
-    'Corn_(maize)___Cercospora_leaf_spot Gray_leaf_spot', 'Corn_(maize)___Common_rust_',
-    'Corn_(maize)___Northern_Leaf_Blight', 'Corn_(maize)___healthy', 'Grape___Black_rot',
-    'Grape___Esca_(Black_Measles)', 'Grape___Leaf_blight_(Isariopsis_Leaf_Spot)', 'Grape___healthy',
-    'Orange___Haunglongbing_(Citrus_greening)', 'Peach___Bacterial_spot', 'Peach___healthy',
-    'Pepper,_bell___Bacterial_spot', 'Pepper,_bell___healthy', 'Potato___Early_blight', 'Potato___Late_blight',
-    'Potato___healthy', 'Raspberry___healthy', 'Soybean___healthy', 'Squash___Powdery_mildew',
-    'Strawberry___Leaf_scorch', 'Strawberry___healthy', 'Tomato___Bacterial_spot', 'Tomato___Early_blight',
-    'Tomato___Late_blight', 'Tomato___Leaf_Mold', 'Tomato___Septoria_leaf_spot',
-    'Tomato___Spider_mites Two-spotted_spider_mite', 'Tomato___Target_Spot',
-    'Tomato___Tomato_Yellow_Leaf_Curl_Virus', 'Tomato___Tomato_mosaic_virus', 'Tomato___healthy'
-]
-  # Update based on your model output
+CLASS_NAMES = []
+class_names_path = os.path.join(MODEL_DIR, 'class_names.json')
+if os.path.exists(class_names_path):
+    try:
+        with open(class_names_path, 'r', encoding='utf-8') as f:
+            CLASS_NAMES = json.load(f)
+    except Exception:
+        CLASS_NAMES = []
 
 def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
@@ -103,26 +102,30 @@ def upload_image(lang):
             db.session.add(new_image)
             db.session.commit()
 
-            # ✅ Predict using the model
+            predicted_label = None
             try:
-                img = PILImage.open(upload_path).convert('RGB')
-                img = img.resize((224, 224))  # Modelin gözlədiyi ölçü
-                img_array = np.array(img) / 255.0
-                img_array = np.expand_dims(img_array, axis=0)
+                if model is None or np is None:
+                    predicted_label = "Model not available"
+                else:
+                    img = PILImage.open(upload_path).convert('RGB')
+                    img = img.resize((224, 224))
+                    img_array = np.array(img) / 255.0
+                    img_array = np.expand_dims(img_array, axis=0)
 
-                prediction = model.predict(img_array)
-                print("Prediction output:", prediction)
-                print("Prediction shape:", prediction.shape)
-
-                # Əgər prediction cavabı boşdursa
-                if prediction is None or prediction.shape[1] == 0:
-                    predicted_label = "Prediction failed (empty output)"
-                elif prediction.shape[1] == 1:  # Binary classification (sigmoid)
-                    predicted_label = CLASS_NAMES[1] if prediction[0][0] > 0.5 else CLASS_NAMES[0]
-                else:  # Multi-class (softmax)
-                    predicted_label = CLASS_NAMES[np.argmax(prediction[0])]
-
-
+                    prediction = model.predict(img_array, verbose=0)
+                    if prediction is None or len(prediction.shape) != 2 or prediction.shape[0] < 1:
+                        predicted_label = "Prediction failed"
+                    elif prediction.shape[1] == 1:
+                        if len(CLASS_NAMES) >= 2:
+                            predicted_label = CLASS_NAMES[1] if float(prediction[0][0]) > 0.5 else CLASS_NAMES[0]
+                        else:
+                            predicted_label = "Unknown"
+                    else:
+                        idx = int(np.argmax(prediction[0]))
+                        if 0 <= idx < len(CLASS_NAMES):
+                            predicted_label = CLASS_NAMES[idx]
+                        else:
+                            predicted_label = "Unknown"
             except Exception as e:
                 flash(f"Error during prediction: {str(e)}", "danger")
                 return redirect(request.url)
@@ -206,7 +209,6 @@ def api_upload_image():
         os.makedirs(UPLOAD_FOLDER, exist_ok=True)
         file.save(upload_path)
 
-        # Predict using the model
         predicted_label = "Unknown"
         confidence = 0.0
         try:
@@ -219,16 +221,21 @@ def api_upload_image():
                 img_array = np.expand_dims(img_array, axis=0)
 
                 prediction = model.predict(img_array, verbose=0)
-                
-                if prediction is None or prediction.shape[1] == 0:
+                if prediction is None or len(prediction.shape) != 2 or prediction.shape[0] < 1:
                     predicted_label = "Prediction failed"
                 elif prediction.shape[1] == 1:
                     confidence = float(prediction[0][0])
-                    predicted_label = CLASS_NAMES[1] if confidence > 0.5 else CLASS_NAMES[0]
+                    if len(CLASS_NAMES) >= 2:
+                        predicted_label = CLASS_NAMES[1] if confidence > 0.5 else CLASS_NAMES[0]
+                    else:
+                        predicted_label = "Unknown"
                 else:
-                    predicted_idx = np.argmax(prediction[0])
+                    predicted_idx = int(np.argmax(prediction[0]))
                     confidence = float(prediction[0][predicted_idx])
-                    predicted_label = CLASS_NAMES[predicted_idx]
+                    if 0 <= predicted_idx < len(CLASS_NAMES):
+                        predicted_label = CLASS_NAMES[predicted_idx]
+                    else:
+                        predicted_label = "Unknown"
         except Exception as e:
             print(f"Error during prediction: {str(e)}")
             predicted_label = f"Error: {str(e)}"
