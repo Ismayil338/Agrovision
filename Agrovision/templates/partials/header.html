@@ -1,0 +1,51 @@
+<header class="fixed top-0 left-0 right-0 bg-white/95 backdrop-blur-sm shadow-sm z-50">
+ <nav class="max-w-7xl mx-auto px-4 md:px-6 py-4">
+  <div class="flex justify-between items-center">
+   <div class="flex items-center space-x-2">
+    <div class="w-10 h-10 bg-gradient-to-br from-green-500 to-orange-500 rounded-lg flex items-center justify-center text-white text-xl font-bold">A</div><span id="nav-title" class="text-xl md:text-2xl font-bold gradient-text">Agrovision</span>
+   </div>
+   <div class="hidden md:flex items-center space-x-8"><a href="#home" class="nav-item text-gray-700 font-medium" data-i18n="nav.home" onclick="navigateTo('home', event)">Home</a> <a href="#features" class="nav-item text-gray-700 font-medium" data-i18n="nav.features" onclick="navigateTo('features', event)">Features</a> <a href="#analyze" class="nav-item text-gray-700 font-medium" data-i18n="nav.analyze" onclick="navigateTo('analyze', event)">Analyze</a> <a href="#dashboard" class="nav-item text-gray-700 font-medium" data-i18n="nav.dashboard" onclick="navigateTo('dashboard', event)">Dashboard</a> <a href="#gallery" class="nav-item text-gray-700 font-medium" data-i18n="nav.gallery" onclick="navigateTo('gallery', event)">Gallery</a> <a href="#contact" class="nav-item text-gray-700 font-medium" data-i18n="nav.contact" onclick="navigateTo('contact', event)">Contact</a></div>
+   <div class="hidden md:flex items-center space-x-4">
+    <div class="relative">
+     <button id="lang-switcher" class="bg-gray-100 hover:bg-gray-200 text-gray-700 px-4 py-2 rounded-full font-semibold transition flex items-center space-x-2" onclick="toggleLanguageMenu()"><span id="current-lang">EN</span><span>▼</span></button>
+     <div id="lang-menu" class="hidden absolute right-0 mt-2 bg-white rounded-xl shadow-lg border border-gray-200 py-2 z-50 min-w-[120px]">
+      <button class="w-full text-left px-4 py-2 hover:bg-gray-100 text-gray-700 font-medium" onclick="switchLanguage('en')">🇬🇧 English</button>
+      <button class="w-full text-left px-4 py-2 hover:bg-gray-100 text-gray-700 font-medium" onclick="switchLanguage('az')">🇦🇿 Azərbaycanca</button>
+     </div>
+    </div>
+    <div class="relative">
+     <button id="sign-in-btn" class="btn-gradient-orange text-white px-6 py-2.5 rounded-full font-semibold" onclick="navigateTo('login', event)"> Sign In </button>
+     <div id="account-menu" class="hidden absolute right-0 mt-2 bg-white rounded-xl shadow-lg border border-gray-200 py-2 z-50 min-w-[160px]">
+      <button class="w-full text-left px-4 py-2 hover:bg-gray-100 text-gray-700 font-medium" data-i18n="nav.dashboard" onclick="navigateTo('dashboard', event)">Dashboard</button>
+      <button class="w-full text-left px-4 py-2 hover:bg-gray-100 text-red-600 font-medium" data-i18n="nav.signout" onclick="handleLogout()">Sign out</button>
+     </div>
+    </div>
+   </div>
+   <button id="mobile-menu-btn" class="md:hidden p-2 rounded-lg text-gray-700 hover:bg-gray-100 transition" onclick="toggleMobileMenu()" aria-label="Toggle menu">
+    <svg id="menu-icon" class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path></svg>
+    <svg id="close-icon" class="w-6 h-6 hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+   </button>
+  </div>
+  <div id="mobile-menu" class="hidden md:hidden absolute top-full left-0 right-0 bg-white shadow-lg border-t border-gray-200 py-4 z-40">
+   <div class="px-4 space-y-2">
+    <a href="#home" class="block px-4 py-3 rounded-lg text-gray-700 font-medium hover:bg-gray-100 transition" data-i18n="nav.home" onclick="navigateTo('home', event); closeMobileMenu();">Home</a>
+    <a href="#features" class="block px-4 py-3 rounded-lg text-gray-700 font-medium hover:bg-gray-100 transition" data-i18n="nav.features" onclick="navigateTo('features', event); closeMobileMenu();">Features</a>
+    <a href="#analyze" class="block px-4 py-3 rounded-lg text-gray-700 font-medium hover:bg-gray-100 transition" data-i18n="nav.analyze" onclick="navigateTo('analyze', event); closeMobileMenu();">Analyze</a>
+    <a href="#dashboard" class="block px-4 py-3 rounded-lg text-gray-700 font-medium hover:bg-gray-100 transition" data-i18n="nav.dashboard" onclick="navigateTo('dashboard', event); closeMobileMenu();">Dashboard</a>
+    <a href="#gallery" class="block px-4 py-3 rounded-lg text-gray-700 font-medium hover:bg-gray-100 transition" data-i18n="nav.gallery" onclick="navigateTo('gallery', event); closeMobileMenu();">Gallery</a>
+    <a href="#contact" class="block px-4 py-3 rounded-lg text-gray-700 font-medium hover:bg-gray-100 transition" data-i18n="nav.contact" onclick="navigateTo('contact', event); closeMobileMenu();">Contact</a>
+    <div class="border-t border-gray-200 my-2"></div>
+    <div class="px-4 py-2">
+     <div class="relative mb-3">
+      <button id="mobile-lang-switcher" class="w-full bg-gray-100 hover:bg-gray-200 text-gray-700 px-4 py-2 rounded-lg font-semibold transition flex items-center justify-between" onclick="toggleMobileLanguageMenu()"><span>Language</span><span id="mobile-current-lang">EN</span></button>
+      <div id="mobile-lang-menu" class="hidden absolute top-full left-0 right-0 mt-2 bg-white rounded-lg shadow-lg border border-gray-200 py-2 z-50">
+       <button class="w-full text-left px-4 py-2 hover:bg-gray-100 text-gray-700 font-medium" onclick="switchLanguage('en'); closeMobileMenu();">🇬🇧 English</button>
+       <button class="w-full text-left px-4 py-2 hover:bg-gray-100 text-gray-700 font-medium" onclick="switchLanguage('az'); closeMobileMenu();">🇦🇿 Azərbaycanca</button>
+      </div>
+     </div>
+     <button class="w-full btn-gradient-orange text-white px-6 py-3 rounded-lg font-semibold" onclick="navigateTo('login', event); closeMobileMenu();"> Sign In </button>
+    </div>
+   </div>
+  </div>
+ </nav>
+</header>
