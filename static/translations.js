@@ -7,7 +7,8 @@ const translations = {
       analyze: 'Analyze',
       dashboard: 'Dashboard',
       gallery: 'Gallery',
-      contact: 'Contact'
+      contact: 'Contact',
+      signout: 'Sign out'
     },
     home: {
       heroTitle: 'Future of Farming',
@@ -164,7 +165,8 @@ const translations = {
       analyze: 'Təhlil',
       dashboard: 'İdarə Paneli',
       gallery: 'Qalereya',
-      contact: 'Əlaqə'
+      contact: 'Əlaqə',
+      signout: 'Çıxış'
     },
     home: {
       heroTitle: 'Kənd Təsərrüfatının Gələcəyi',
