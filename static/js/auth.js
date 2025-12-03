@@ -1,4 +1,4 @@
-import { updateTranslations } from './i18n.js';
+import { updateTranslations, getCurrentLanguage } from './i18n.js';
 
 async function apiCall(url, options = {}) {
   try {
@@ -70,7 +70,7 @@ async function handleLogout() {
     updateUIForLoggedOut();
     navigateTo('home', { preventDefault: () => {} });
   } else {
-    alert(result.data?.message || 'Error logging out.');
+    alert(result.data?.message || (getCurrentLanguage() === 'az' ? 'Sistemdən çıxışda xəta.' : 'Error logging out.'));
   }
 }
 
@@ -80,10 +80,10 @@ async function handleLogin(event) {
   const password = document.getElementById('login-password').value;
   const successDiv = document.getElementById('auth-success');
   successDiv.classList.remove('hidden');
-  successDiv.textContent = 'Loading...';
+  successDiv.textContent = getCurrentLanguage() === 'az' ? 'Yüklənir...' : 'Loading...';
   successDiv.classList.remove('bg-red-100', 'text-red-700');
   successDiv.classList.add('bg-blue-100', 'text-blue-700');
-  const result = await apiCall('/api/login', { method: 'POST', body: JSON.stringify({ email, password }) });
+  const result = await apiCall('/api/login', { method: 'POST', body: JSON.stringify({ email, password, lang: getCurrentLanguage() }) });
   if (result.success) {
     successDiv.textContent = '✓ ' + result.data.message;
     successDiv.classList.remove('bg-blue-100', 'text-blue-700', 'bg-red-100', 'text-red-700');
@@ -111,7 +111,7 @@ async function handleSignup(event) {
   const confirm = document.getElementById('signup-confirm').value;
   const successDiv = document.getElementById('auth-success');
   if (password !== confirm) {
-    successDiv.textContent = '✗ Passwords do not match!';
+    successDiv.textContent = getCurrentLanguage() === 'az' ? '✗ Şifrələr uyğun deyil!' : '✗ Passwords do not match!';
     successDiv.classList.remove('bg-green-100', 'text-green-700');
     successDiv.classList.add('bg-red-100', 'text-red-700');
     successDiv.classList.remove('hidden');
@@ -121,12 +121,12 @@ async function handleSignup(event) {
     return;
   }
   successDiv.classList.remove('hidden');
-  successDiv.textContent = 'Loading...';
+  successDiv.textContent = getCurrentLanguage() === 'az' ? 'Yüklənir...' : 'Loading...';
   successDiv.classList.remove('bg-red-100', 'text-red-700');
   successDiv.classList.add('bg-blue-100', 'text-blue-700');
-  const result = await apiCall('/api/signup', { method: 'POST', body: JSON.stringify({ email, password }) });
+  const result = await apiCall('/api/signup', { method: 'POST', body: JSON.stringify({ email, password, lang: getCurrentLanguage() }) });
   if (result.success) {
-    successDiv.textContent = '✓ ' + result.data.message + ' Please log in.';
+    successDiv.textContent = '✓ ' + result.data.message;
     successDiv.classList.remove('bg-blue-100', 'text-blue-700', 'bg-red-100', 'text-red-700');
     successDiv.classList.add('bg-green-100', 'text-green-700');
     setTimeout(() => {

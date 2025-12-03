@@ -40,41 +40,41 @@ def render_page(lang, page):
 
     return render_template(template_path, lang=lang, page=page)
 
+MESSAGES = {
+    'missing_fields': {
+        'en': "Email and password are required.",
+        'az': "E-poçt və şifrə tələb olunur."
+    },
+    'user_exists': {
+        'en': "User already exists.",
+        'az': "İstifadəçi artıq mövcuddur."
+    },
+    'signup_success': {
+        'en': "Account created successfully! Please log in.",
+        'az': "Hesab uğurla yaradıldı! Zəhmət olmasa daxil olun."
+    },
+    'email_not_found': {
+        'en': "No account with this email exists. Create a new one.",
+        'az': "Bu e-poçt ünvanı ilə hesab tapılmadı. Yeni bir hesab yaradın."
+    },
+    'wrong_password': {
+        'en': "Incorrect password. Please try again.",
+        'az': "Şifrə yanlışdır. Zəhmət olmasa yenidən cəhd edin."
+    },
+    'login_success': {
+        'en': "Logged in successfully!",
+        'az': "Uğurla daxil oldunuz!"
+    },
+    'logged_out': {
+        'en': "Logged out.",
+        'az': "Sistemdən çıxıldı."
+    }
+}
+
 # Flash message helper
 def flash_message(key, lang):
-    messages = {
-        'missing_fields': {
-            'en': "Email and password are required.",
-            'az': "E-poçt və şifrə tələb olunur."
-        },
-        'user_exists': {
-            'en': "User already exists.",
-            'az': "İstifadəçi artıq mövcuddur."
-        },
-        'signup_success': {
-            'en': "Account created successfully! Please log in.",
-            'az': "Hesab uğurla yaradıldı! Zəhmət olmasa daxil olun."
-        },
-        'email_not_found': {
-            'en': "No account with this email exists. Create a new one.",
-            'az': "Bu e-poçt ünvanı ilə hesab tapılmadı. Yeni bir hesab yaradın."
-        },
-        'wrong_password': {
-            'en': "Incorrect password. Please try again.",
-            'az': "Şifrə yanlışdır. Zəhmət olmasa yenidən cəhd edin."
-        },
-        'login_success': {
-            'en': "Logged in successfully!",
-            'az': "Uğurla daxil oldunuz!"
-        },
-        'logged_out': {
-            'en': "Logged out.",
-            'az': "Sistemdən çıxıldı."
-        }
-    }
-
     category = 'success' if key in ['signup_success', 'login_success', 'logged_out'] else 'danger'
-    flash(messages[key].get(lang, messages[key]['en']), category)
+    flash(MESSAGES[key].get(lang, MESSAGES[key]['en']), category)
 
 # Signup
 @app.route('/<lang>/signup', methods=['GET', 'POST'])
@@ -147,39 +147,41 @@ def api_signup():
     data = request.get_json()
     email = data.get('email')
     password = data.get('password')
+    lang = data.get('lang') or 'en'
     
     if not email or not password:
-        return jsonify({'success': False, 'message': 'Email and password are required.'}), 400
+        return jsonify({'success': False, 'message': MESSAGES['missing_fields'].get(lang, MESSAGES['missing_fields']['en'])}), 400
     
     if User.query.filter_by(email=email).first():
-        return jsonify({'success': False, 'message': 'User already exists.'}), 400
+        return jsonify({'success': False, 'message': MESSAGES['user_exists'].get(lang, MESSAGES['user_exists']['en'])}), 400
     
     user = User(email=email)
     user.set_password(password)
     db.session.add(user)
     db.session.commit()
     
-    return jsonify({'success': True, 'message': 'Account created successfully!'}), 201
+    return jsonify({'success': True, 'message': MESSAGES['signup_success'].get(lang, MESSAGES['signup_success']['en'])}), 201
 
 @app.route('/api/login', methods=['POST'])
 def api_login():
     data = request.get_json()
     email = data.get('email')
     password = data.get('password')
+    lang = data.get('lang') or 'en'
     
     if not email or not password:
-        return jsonify({'success': False, 'message': 'Email and password are required.'}), 400
+        return jsonify({'success': False, 'message': MESSAGES['missing_fields'].get(lang, MESSAGES['missing_fields']['en'])}), 400
     
     user = User.query.filter_by(email=email).first()
     
     if not user:
-        return jsonify({'success': False, 'message': 'No account with this email exists.'}), 401
+        return jsonify({'success': False, 'message': MESSAGES['email_not_found'].get(lang, MESSAGES['email_not_found']['en'])}), 401
     
     if not user.check_password(password):
-        return jsonify({'success': False, 'message': 'Incorrect password.'}), 401
+        return jsonify({'success': False, 'message': MESSAGES['wrong_password'].get(lang, MESSAGES['wrong_password']['en'])}), 401
     
     session['user_id'] = user.id
-    return jsonify({'success': True, 'message': 'Logged in successfully!', 'user_id': user.id}), 200
+    return jsonify({'success': True, 'message': MESSAGES['login_success'].get(lang, MESSAGES['login_success']['en']), 'user_id': user.id}), 200
 
 @app.route('/api/logout', methods=['POST'])
 def api_logout():
