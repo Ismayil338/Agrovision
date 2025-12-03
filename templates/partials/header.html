@@ -16,8 +16,8 @@
     <div class="relative">
      <button id="sign-in-btn" class="btn-gradient-orange text-white px-6 py-2.5 rounded-full font-semibold" onclick="navigateTo('login', event)"> Sign In </button>
      <div id="account-menu" class="hidden absolute right-0 mt-2 bg-white rounded-xl shadow-lg border border-gray-200 py-2 z-50 min-w-[160px]">
-      <button class="w-full text-left px-4 py-2 hover:bg-gray-100 text-gray-700 font-medium" onclick="navigateTo('dashboard', event)">Dashboard</button>
-      <button class="w-full text-left px-4 py-2 hover:bg-gray-100 text-red-600 font-medium" onclick="handleLogout()">Sign out</button>
+      <button class="w-full text-left px-4 py-2 hover:bg-gray-100 text-gray-700 font-medium" data-i18n="nav.dashboard" onclick="navigateTo('dashboard', event)">Dashboard</button>
+      <button class="w-full text-left px-4 py-2 hover:bg-gray-100 text-red-600 font-medium" data-i18n="nav.signout" onclick="handleLogout()">Sign out</button>
      </div>
     </div>
    </div>
