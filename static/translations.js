@@ -138,7 +138,11 @@ const translations = {
       saturday: 'Saturday',
       sunday: 'Sunday',
       closed: 'Closed',
-      followUs: 'Follow Us'
+      followUs: 'Follow Us',
+      placeholderName: 'John Doe',
+      placeholderEmail: 'your.email@example.com',
+      placeholderSubject: 'How can we help?',
+      placeholderMessage: 'Tell us more about your inquiry...'
     },
     login: {
       welcomeBack: 'Welcome Back!',
@@ -297,7 +301,11 @@ const translations = {
       saturday: 'Şənbə',
       sunday: 'Bazar',
       closed: 'Bağlıdır',
-      followUs: 'Bizi izləyin'
+      followUs: 'Bizi izləyin',
+      placeholderName: 'Adınız Soyadınız',
+      placeholderEmail: 'sizin.email@misal.com',
+      placeholderSubject: 'Necə kömək edə bilərik?',
+      placeholderMessage: 'Sorğunuz haqqında daha çox məlumat verin...'
     },
     login: {
       welcomeBack: 'Xoş gəlmisiniz!',

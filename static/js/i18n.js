@@ -28,6 +28,14 @@ function updateTranslations() {
       }
     }
   });
+  // Handle placeholder translations
+  document.querySelectorAll('[data-i18n-placeholder]').forEach(el => {
+    const key = el.getAttribute('data-i18n-placeholder');
+    const text = translate(key);
+    if (text) {
+      el.placeholder = text;
+    }
+  });
   const heroTagline = document.getElementById('hero-tagline');
   if (heroTagline) {
     const heroText = translate('home.heroTitle');
